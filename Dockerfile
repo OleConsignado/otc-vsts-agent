@@ -53,14 +53,14 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_
  && mv ./kubectl /usr/local/bin/kubectl
 
 # Install Helm
-RUN mkdir helm-installation; \
-  cd helm-installation; \
-  curl https://storage.googleapis.com/kubernetes-helm/helm-$HELM_VERSION-linux-amd64.tar.gz -o helm.tar.gz; \
-  tar xfvz helm.tar.gz; \
-  cp linux-amd64/helm /usr/local/bin; \
-  cd .. ; \
-  rm -Rf helm-installation; \
-  chmod a+x /usr/local/bin/helm
+RUN mkdir helm-installation \
+  && cd helm-installation \
+  && curl https://storage.googleapis.com/kubernetes-helm/helm-$HELM_VERSION-linux-amd64.tar.gz -o helm.tar.gz \
+  && tar xfvz helm.tar.gz \
+  && cp linux-amd64/helm /usr/local/bin \
+  && cd ..  \
+  && rm -Rf helm-installation \
+  && chmod a+x /usr/local/bin/helm
 
 # Docker
 ENV DOCKER_CHANNEL stable
