@@ -4,6 +4,7 @@ FROM microsoft/vsts-agent:ubuntu-16.04
 
 ARG KUBECTL_VERSION
 ARG DOCKER_VERSION
+ARG HELM_VERSION
 
 # Install basic command-line utilities
 RUN apt-get update \
@@ -52,7 +53,14 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_
  && mv ./kubectl /usr/local/bin/kubectl
 
 # Install Helm
-RUN curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
+mkdir helm-installation
+cd helm-installation
+curl https://storage.googleapis.com/kubernetes-helm/helm-$HELM_VERSION-linux-amd64.tar.gz -o helm.tar.gz
+tar xfvz helm.tar.gz
+cp linux-amd64/helm /usr/local/bin
+cd ..
+rm -Rf helm-installation
+chmod a+x /usr/local/bin/helm
 
 # Docker
 ENV DOCKER_CHANNEL stable

@@ -6,7 +6,7 @@ services:
   
 deploy:
   provider: script
-  script: bash ./publish-docker-17.03.1-ce-kubectl-v1.9.0.sh
+  script: bash ./publish-docker-17.03.1-ce-kubectl-v1.9.0-helm-v2.7.2.sh
   on:
     branch: release  
     tags: true
