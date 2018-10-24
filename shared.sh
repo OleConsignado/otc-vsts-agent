@@ -24,7 +24,10 @@ echo "Performing login to Dockerhub ..."
 docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
 
 echo "Building image ..."
-docker build --build-arg KUBECTL_VERSION=$KUBECTL_VERSION --build-arg DOCKER_VERSION=$DOCKER_VERSION  . -t $IMAGE_FULL_NAME
+docker build --build-arg KUBECTL_VERSION=$KUBECTL_VERSION \
+	--build-arg DOCKER_VERSION=$DOCKER_VERSION  \
+	--build-arg HELM_VERSION=$HELM_VERSION  \
+	. -t $IMAGE_FULL_NAME
 
 echo "Pushing image ..."
 docker push $IMAGE_FULL_NAME
