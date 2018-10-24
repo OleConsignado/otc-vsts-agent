@@ -1,19 +1,19 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: vsts-agent
+  name: otc-vsts-agent-dotnet
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vsts-agent
+      app: otc-vsts-agent-dotnet
   template:
     metadata:
       labels:
-        app: vsts-agent
+        app: otc-vsts-agent-dotnet
     spec:
       containers:
-      - name: vsts-agent
+      - name: otc-vsts-agent-dotnet
         image: oleconsignado/otc-vsts-agent-dotnet-k8s:docker-17.03.1-ce-kubectl-v1.9.0-helm-v2.7.2-v1.1
         env:
           - name: VSTS_ACCOUNT
