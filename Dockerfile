@@ -47,9 +47,6 @@ RUN curl https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-p
 RUN dotnet help
 ENV dotnet=/usr/bin/dotnet
 
-# Instal GDI Plus (required for dotnet core Image/Color API)
-RUN apt-get install -y libgdiplus
-
 # Install kubectl
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl \
  && chmod +x ./kubectl \

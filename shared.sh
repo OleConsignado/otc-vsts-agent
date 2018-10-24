@@ -10,7 +10,7 @@ then
         exit 1
 fi 
 
-IMAGE_NAME=oleconsignado/otc-vsts-agent
+IMAGE_NAME=oleconsignado/otc-vsts-agent-dotnet-k8s
 IMAGE_TAG=docker-$DOCKER_VERSION-kubectl-$KUBECTL_VERSION-helm-$HELM_VERSION-$TRAVIS_TAG
 IMAGE_FULL_NAME=$IMAGE_NAME:$IMAGE_TAG
 
