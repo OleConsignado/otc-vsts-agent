@@ -17,7 +17,7 @@ spec:
         image: oleconsignado/otc-vsts-agent-dotnet-k8s:docker-17.03.1-ce-kubectl-v1.9.0-helm-v2.7.2-v1.1
         env:
           - name: VSTS_ACCOUNT
-            value: jose@your-organization
+            value: _@your-organization
             # In order to create a secret with vsts token, execute:
             # kubectl create secret generic vsts-token --from-literal=token=<VSTS-TOKEN-HERE>
           - name: VSTS_TOKEN
@@ -38,10 +38,19 @@ spec:
             cpu: 1
         volumeMounts:
         - mountPath: /var/run/docker.sock
-          name: docker-volume
+          name: dockersock-volume
+        - mountPath: /root/.docker
+          name: dockerhub-creedentials-volume    
       volumes:
-      - name: docker-volume
+      - name: dockersock-volume
         hostPath:
           path: /var/run/docker.sock
+        # Create a secret with docker registry (dockerhub) creedentials.
+        # The config.json is taken from /root/.docker/config.json. 
+        # Note: You must perform a docker login in order to get creedentials stored in config.json
+        # kubectl -n kube-system create secret generic dockerhub-creedentials --from-file=./config.json               
+      - name: dockerhub-creedentials-volume
+        secret:
+          secretName: dockerhub-creedentials    
       nodeSelector:                          # Optional (use only if you want to use a single node to build images)
         kubernetes.io/hostname: olekbnhml01  # Put the node's hostname here
