@@ -72,7 +72,7 @@ RUN set -ex \
  && docker -v
 
 # Java necessario para sonarscanner 
-RUN apt-get install default-jre-headless
+RUN apt-get install -y --no-install-recommends default-jre
 # Instala ferramenta para analize de cobertura de testes
 RUN dotnet tool install --global coverlet.console
 # Sonarscanner para integracao com sonarqube
