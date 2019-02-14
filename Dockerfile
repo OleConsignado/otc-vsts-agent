@@ -26,6 +26,7 @@ RUN apt-get update \
     wget \
     zip \
     tzdata \
+    default-jre \
  && rm -rf /var/lib/apt/lists/*
 
 # Setup the locale
@@ -71,9 +72,7 @@ RUN set -ex \
  && rm docker.tgz \
  && docker -v
 
-# Java necessario para sonarscanner 
-RUN apt-get install -y --no-install-recommends default-jre
-# Instala ferramenta para analize de cobertura de testes
+# Instala ferramenta para analize de cobertura de testes (coverlet)
 RUN dotnet tool install --global coverlet.console
 # Sonarscanner para integracao com sonarqube
 RUN dotnet tool install --global dotnet-sonarscanner
