@@ -37,8 +37,10 @@ spec:
         - name: TFS_HOST
           value: your-organization.visualstudio.com
         
-        # VSTS_TOKEN is exposed as VCS_TOKEN environmnet variable in order
-        # to be able to perform vcs operations
+        # In case you need to commit/push to VCS (git/tfs) create this secret with the vsts token
+        # and it will be avaiable as VCS_TOKEN env var.
+        # To create a secret with vsts token, execute:
+        # kubectl create secret generic vsts-vcs-token --from-literal=token=<VSTS-TOKEN-HERE>
         - name: VCS_TOKEN
           valueFrom:
             secretKeyRef:
@@ -78,7 +80,11 @@ spec:
       - name: dockersock-volume
         hostPath:
           path: /var/run/docker.sock
-        
+
+       # Create a secret with docker registry (dockerhub) creedentials.
+       # The config.json is taken from /root/.docker/config.json.
+       # Note: You must perform a docker login in order to get creedentials stored in config.json
+       # kubectl -n kube-system create secret generic dockerhub-creedentials --from-file=./config.json
       - name: dockerhub-creedentials-volume
         secret:
           secretName: dockerhub-creedentials
