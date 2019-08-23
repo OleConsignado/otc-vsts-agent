@@ -81,10 +81,10 @@ spec:
         hostPath:
           path: /var/run/docker.sock
 
-       # Create a secret with docker registry (dockerhub) creedentials.
-       # The config.json is taken from /root/.docker/config.json.
-       # Note: You must perform a docker login in order to get creedentials stored in config.json
-       # kubectl -n kube-system create secret generic dockerhub-creedentials --from-file=./config.json
+      # Create a secret with docker registry (dockerhub) creedentials.
+      # The config.json is taken from /root/.docker/config.json.
+      # Note: You must perform a docker login in order to get creedentials stored in config.json
+      # kubectl -n kube-system create secret generic dockerhub-creedentials --from-file=./config.json
       - name: dockerhub-creedentials-volume
         secret:
           secretName: dockerhub-creedentials
