@@ -1,7 +1,10 @@
-apiVersion: apps/v1beta2
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  labels:
+    app: otc-vsts-agent-dotnet
   name: otc-vsts-agent-dotnet
+  namespace: kube-system
 spec:
   replicas: 1
   selector:
@@ -14,43 +17,83 @@ spec:
     spec:
       containers:
       - name: otc-vsts-agent-dotnet
-        image: oleconsignado/otc-vsts-agent-dotnet-k8s:docker-17.03.1-ce-kubectl-v1.9.0-helm-v2.7.2-v1.2
+        image: oleconsignado/otc-vsts-agent-dotnet-k8s:docker-17.03.1-ce-kubectl-v1.9.0-helm-v2.7.2-v1.2      
         env:
-          - name: VSTS_ACCOUNT
-            value: _@your-organization
-            # In order to create a secret with vsts token, execute:
-            # kubectl create secret generic vsts-token --from-literal=token=<VSTS-TOKEN-HERE>
-          - name: VSTS_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: vsts-token
-                key: token
-          - name: VSTS_POOL
-            value: Kubernetes
-          - name: TFS_HOST
-            value: your-organization.visualstudio.com
+        - name: VSTS_ACCOUNT
+          value: _@your-organization
+          
+        # VSTS_TOKEN
+        # In order to create a secret with vsts token, execute:
+        # kubectl create secret generic vsts-token --from-literal=token=<VSTS-TOKEN-HERE>          
+        - name: VSTS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: vsts-token
+
+        - name: VSTS_POOL
+          value: Kubernetes
+
+        - name: TFS_HOST
+          value: your-organization.visualstudio.com
+        
+        # VSTS_TOKEN is exposed as VCS_TOKEN environmnet variable in order
+        # to be able to perform vcs operations
+        - name: VCS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: vsts-vcs-token
+              optional: true
+
+        - name: SONARQUBE_HOST
+          value: http://sonarqube.sonarqube:9000
+
+        # Create with:
+        # kubectl create secret generic vsts-sonarqube-userkey --from-literal=userkey=<SONAR-USERKEY-HERE>          
+        - name: SONARQUBE_USERKEY
+          valueFrom:
+            secretKeyRef:
+              key: userkey
+              name: vsts-sonarqube-userkey
+              optional: true
+              
         resources:
-          requests:
-            memory: 256Mi
-            cpu: 1
           limits:
-            memory: 512Mi
-            cpu: 1
+            cpu: "4"
+            memory: 1Gi
+          requests:
+            cpu: "1"
+            memory: 768Mi
+
         volumeMounts:
         - mountPath: /var/run/docker.sock
           name: dockersock-volume
         - mountPath: /root/.docker
-          name: dockerhub-creedentials-volume    
+          name: dockerhub-creedentials-volume
+        - mountPath: /root/scripts
+          name: scripts-volume
+
       volumes:
       - name: dockersock-volume
         hostPath:
           path: /var/run/docker.sock
-        # Create a secret with docker registry (dockerhub) creedentials.
-        # The config.json is taken from /root/.docker/config.json. 
-        # Note: You must perform a docker login in order to get creedentials stored in config.json
-        # kubectl -n kube-system create secret generic dockerhub-creedentials --from-file=./config.json               
+        
       - name: dockerhub-creedentials-volume
         secret:
-          secretName: dockerhub-creedentials    
-      nodeSelector:                          # Optional (use only if you want to use a single node to build images)
-        kubernetes.io/hostname: olekbnhml01  # Put the node's hostname here
+          secretName: dockerhub-creedentials
+
+      - name: scripts-volume
+        configMap:
+          name: otc-vsts-agent-dotnet-scripts-configmap
+
+      # Optional: In order to use dedicated nodes for build
+      #           You must add label and taint to it
+      #nodeSelector:
+      #  dedicated: devops-tools
+
+      #tolerations:
+      #- effect: NoSchedule
+      #  key: dedicated
+      #  operator: Equal
+      #  value: devops-tools
