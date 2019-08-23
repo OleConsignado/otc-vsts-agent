@@ -37,9 +37,9 @@ spec:
         - name: TFS_HOST
           value: your-organization.visualstudio.com
         
-        # In case you need to commit/push to VCS (git/tfs) create this secret with the vsts token
-        # and it will be avaiable as VCS_TOKEN env var.
-        # To create a secret with vsts token, execute:
+        # If you need to commit/push to VCS (git/tfs) create this secret with the vsts token
+        # in order to get it avaiable as VCS_TOKEN env var.
+        # Create secret using command below:
         # kubectl create secret generic vsts-vcs-token --from-literal=token=<VSTS-TOKEN-HERE>
         - name: VCS_TOKEN
           valueFrom:
@@ -51,7 +51,7 @@ spec:
         - name: SONARQUBE_HOST
           value: http://sonarqube.sonarqube:9000
 
-        # Create with:
+        # Create using:
         # kubectl create secret generic vsts-sonarqube-userkey --from-literal=userkey=<SONAR-USERKEY-HERE>          
         - name: SONARQUBE_USERKEY
           valueFrom:
