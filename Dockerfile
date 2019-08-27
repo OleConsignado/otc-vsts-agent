@@ -42,7 +42,7 @@ RUN curl https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-p
  && apt-get update \
  && apt-get install -y --no-install-recommends \
     apt-transport-https \
-    dotnet-sdk-2.1 \
+    dotnet-sdk-2.2 \
  && rm -rf /var/lib/apt/lists/* \
  && rm -rf /etc/apt/sources.list.d/*
 RUN dotnet help
@@ -73,9 +73,13 @@ RUN set -ex \
  && docker -v
 
 # Instala ferramenta para analize de cobertura de testes (coverlet)
-RUN dotnet tool install --global coverlet.console
+RUN dotnet tool install --global coverlet.console --version 1.5.3
 # Sonarscanner para integracao com sonarqube
-RUN dotnet tool install --global dotnet-sonarscanner
+RUN dotnet tool install --global dotnet-sonarscanner --version 4.6.2
+
+# Instala ferramenta otc-task
+COPY otc-task /usr/local/bin/
+RUM chmod a+x /usr/local/bin/otc-task
 
 # Clean system
 RUN apt-get clean \

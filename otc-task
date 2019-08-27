@@ -1,0 +1,72 @@
+#!/bin/bash
+
+set -e
+
+GITHUB_RAWCONTENT_URL_PREFIX="https://raw.githubusercontent.com/"
+GITHUB_REPOSITORY="OleConsignado/otc-vsts-agent-tasks"
+DOWNLOADED_SCRIPTS_DIR="/tmp/otc-task-script-cache"
+
+if ! [ -d "$DOWNLOADED_SCRIPTS_DIR" ]
+then
+	mkdir "$DOWNLOADED_SCRIPTS_DIR"
+fi
+
+function usage
+{
+	echo "Usage: "
+	echo "   $0 [--always-download] [--debug] GIT_TREE SCRIPT_PATH [SCRIPT_ARGS ...]"
+	echo "Example: "
+	echo "   $0 v1 build.sh Debug"
+}
+
+ALWAYS_DOWNLOAD=false
+
+if [ "$1" == "--always-download" ]
+then
+	ALWAYS_DOWNLOAD=true
+	shift
+fi
+
+BASH_DEBUG=false
+
+if [ "$1" == "--debug" ]
+then
+	BASH_DEBUG=true
+	shift
+fi
+
+GIT_TREE="$1"
+SCRIPT_PATH="$2"
+
+if [ -z "$GIT_TREE" ] || [ -z "$SCRIPT_PATH" ]
+then
+	usage >> /dev/stderr
+
+	exit 3
+fi
+
+shift 2
+
+SCRIPT_URL="${GITHUB_RAWCONTENT_URL_PREFIX}${GITHUB_REPOSITORY}/$GIT_TREE/$SCRIPT_PATH"
+SANITIZED_SCRIPT_PATH=$(echo $SCRIPT_PATH | sed 's/[^a-zA-Z0-9.-]*//g')
+SCRIPT_URL_SHA1=$(echo $SCRIPT_URL | sha1sum -t | awk '{ print $1 }')
+SCRIPT_LOCAL_NAME="${SANITIZED_SCRIPT_PATH}-${SCRIPT_URL_SHA1}"
+SCRIPT_FULL_PATH="${DOWNLOADED_SCRIPTS_DIR}/$SCRIPT_LOCAL_NAME"
+
+if ! [ -f "$SCRIPT_FULL_PATH" ] || $ALWAYS_DOWNLOAD
+then
+	if ! curl -f -s "$SCRIPT_URL" -o "$SCRIPT_FULL_PATH"
+	then
+		echo "Error downloading '$SCRIPT_URL'." >> /dev/stderr
+		exit 4
+	fi
+fi
+
+BASH_ARGS="-l"
+
+if $BASH_DEBUG
+then
+	BASH_ARGS="$BASH_ARGS -x"
+fi
+
+bash $BASH_ARGS "$SCRIPT_FULL_PATH" $@
