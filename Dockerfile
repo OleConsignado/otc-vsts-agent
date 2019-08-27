@@ -79,7 +79,7 @@ RUN dotnet tool install --global dotnet-sonarscanner --version 4.6.2
 
 # Instala ferramenta otc-task
 COPY otc-task /usr/local/bin/
-RUM chmod a+x /usr/local/bin/otc-task
+RUN chmod a+x /usr/local/bin/otc-task
 
 # Clean system
 RUN apt-get clean \
