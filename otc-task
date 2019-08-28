@@ -14,26 +14,41 @@ fi
 function usage
 {
 	echo "Usage: "
-	echo "   $0 [--always-download] [--debug] GIT_TREE SCRIPT_PATH [SCRIPT_ARGS ...]"
+	echo "   $0 [--always-download] [--debug] [--bash-login] [--download-only] GIT_TREE SCRIPT_PATH [SCRIPT_ARGS ...]"
 	echo "Example: "
 	echo "   $0 v1 build.sh Debug"
 }
 
 ALWAYS_DOWNLOAD=false
-
-if [ "$1" == "--always-download" ]
-then
-	ALWAYS_DOWNLOAD=true
-	shift
-fi
-
 BASH_DEBUG=false
+BASH_LOGIN=false
+DOWNLOAD_ONLY=false
 
-if [ "$1" == "--debug" ]
-then
-	BASH_DEBUG=true
+# arguments handling
+# based on https://gist.github.com/jehiah/855086#file-simple_args_parsing-sh
+while [[ "$1" == "--"* ]]
+do
+	case "$1" in
+		--always-download)
+			ALWAYS_DOWNLOAD=true
+			;;
+		--debug)
+			BASH_DEBUG=true			
+			;;
+		--bash-login)
+			BASH_LOGIN=true
+			;;
+		--download-only)
+			DOWNLOAD_ONLY=true
+			;;
+		*)
+			echo "Unknow parameter '$1'" >> /dev/stderr
+			usage >> /dev/stderr
+			exit 4
+			;;
+	esac
 	shift
-fi
+done
 
 GIT_TREE="$1"
 SCRIPT_PATH="$2"
@@ -62,11 +77,20 @@ then
 	fi
 fi
 
-BASH_ARGS="-l"
-
-if $BASH_DEBUG
+if $DOWNLOAD_ONLY
 then
-	BASH_ARGS="$BASH_ARGS -x"
-fi
+	echo "$SCRIPT_FULL_PATH"
+else
+	BASH_ARGS=""
 
-bash $BASH_ARGS "$SCRIPT_FULL_PATH" $@
+	if $BASH_LOGIN
+	then
+		BASH_ARGS="$BASH_ARGS -l"
+	fi
+
+	if $BASH_DEBUG
+	then
+		BASH_ARGS="$BASH_ARGS -x"
+	fi	
+	bash $BASH_ARGS "$SCRIPT_FULL_PATH" $@
+fi
