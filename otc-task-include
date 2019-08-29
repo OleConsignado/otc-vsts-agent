@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+INCLUDE_SOURCE=$1
+
+if [ -z "$INCLUDE_SOURCE" ]
+then
+	echo "Usage: $0 INCLUDE_SOURCE" >> /dev/stderr
+
+	exit 3
+fi
+
+otc-task --download-only $OTC_TASK_VERSION_PATH_SEGMENT $INCLUDE_SOURCE

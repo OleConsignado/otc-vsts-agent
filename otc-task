@@ -2,9 +2,12 @@
 
 set -e
 
-GITHUB_RAWCONTENT_URL_PREFIX="https://raw.githubusercontent.com/"
-GITHUB_REPOSITORY="OleConsignado/otc-vsts-agent-tasks"
 DOWNLOADED_SCRIPTS_DIR="/tmp/otc-task-script-cache"
+
+if [ -z "$REPOSITORY_BASE_URL"]
+then
+	REPOSITORY_BASE_URL="https://raw.githubusercontent.com/OleConsignado/otc-vsts-agent-tasks"
+fi
 
 if ! [ -d "$DOWNLOADED_SCRIPTS_DIR" ]
 then
@@ -14,12 +17,18 @@ fi
 function usage
 {
 	echo "Usage: "
-	echo "   $0 [--always-download] [--debug] [--bash-login] [--download-only] GIT_TREE SCRIPT_PATH [SCRIPT_ARGS ...]"
+	echo "   $0 [--always-download] [--debug] [--bash-login] [--download-only] VERSION_PATH_SEGMENT SCRIPT_PATH_SEGMENT [SCRIPT_ARGS ...]"
 	echo "Example: "
 	echo "   $0 v1 build.sh Debug"
 }
 
 ALWAYS_DOWNLOAD=false
+
+if ! [ -z "$OTC_TASK_ALWAYS_DOWNLOAD" ] && $OTC_TASK_ALWAYS_DOWNLOAD
+then # parent script called with --always-download
+	ALWAYS_DOWNLOAD=true
+fi
+
 BASH_DEBUG=false
 BASH_LOGIN=false
 DOWNLOAD_ONLY=false
@@ -50,10 +59,13 @@ do
 	shift
 done
 
-GIT_TREE="$1"
-SCRIPT_PATH="$2"
+# Expose to be read on nested otc-task invokation
+export OTC_TASK_ALWAYS_DOWNLOAD=$ALWAYS_DOWNLOAD
 
-if [ -z "$GIT_TREE" ] || [ -z "$SCRIPT_PATH" ]
+VERSION_PATH_SEGMENT="$1"
+SCRIPT_PATH_SEGMENT="$2"
+
+if [ -z "$VERSION_PATH_SEGMENT" ] || [ -z "$SCRIPT_PATH_SEGMENT" ]
 then
 	usage >> /dev/stderr
 
@@ -62,15 +74,19 @@ fi
 
 shift 2
 
-SCRIPT_URL="${GITHUB_RAWCONTENT_URL_PREFIX}${GITHUB_REPOSITORY}/$GIT_TREE/$SCRIPT_PATH"
-SANITIZED_SCRIPT_PATH=$(echo $SCRIPT_PATH | sed 's/[^a-zA-Z0-9.-]*//g')
+# Expose VERSION_PATH_SEGMENT in order to be used on nested otc-task invokation
+export OTC_TASK_VERSION_PATH_SEGMENT=$VERSION_PATH_SEGMENT
+
+SCRIPT_URL="${REPOSITORY_BASE_URL}/$VERSION_PATH_SEGMENT/$SCRIPT_PATH_SEGMENT"
+SCRIPT_IDENTIFIER=$(echo "$VERSION_PATH_SEGMENT-$SCRIPT_PATH_SEGMENT" | sed 's/[^a-zA-Z0-9.-]*//g')
 SCRIPT_URL_SHA1=$(echo $SCRIPT_URL | sha1sum -t | awk '{ print $1 }')
-SCRIPT_LOCAL_NAME="${SANITIZED_SCRIPT_PATH}-${SCRIPT_URL_SHA1}"
+SCRIPT_LOCAL_NAME="${SCRIPT_IDENTIFIER}-${SCRIPT_URL_SHA1}"
 SCRIPT_FULL_PATH="${DOWNLOADED_SCRIPTS_DIR}/$SCRIPT_LOCAL_NAME"
 
 if ! [ -f "$SCRIPT_FULL_PATH" ] || $ALWAYS_DOWNLOAD
 then
-	if ! curl -f -s "$SCRIPT_URL" -o "$SCRIPT_FULL_PATH"
+	if ! curl -f -s -H 'Cache-Control: no-cache, no-store, must-revalidate' "$SCRIPT_URL?n=$(date +%s)" \
+		-o "$SCRIPT_FULL_PATH"
 	then
 		echo "Error downloading '$SCRIPT_URL'." >> /dev/stderr
 		exit 4
@@ -79,7 +95,7 @@ fi
 
 if $DOWNLOAD_ONLY
 then
-	echo "$SCRIPT_FULL_PATH"
+	cat "$SCRIPT_FULL_PATH"
 else
 	BASH_ARGS=""
 
