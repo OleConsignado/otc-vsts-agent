@@ -68,7 +68,6 @@ script_path_segment="$2"
 if [ -z "$version_path_segment" ] || [ -z "$script_path_segment" ]
 then
 	usage >&2
-
 	exit 3
 fi
 
