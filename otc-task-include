@@ -2,13 +2,12 @@
 
 set -e
 
-INCLUDE_SOURCE=$1
+include_source=$1
 
-if [ -z "$INCLUDE_SOURCE" ]
+if [ -z "$include_source" ]
 then
-	echo "Usage: $0 INCLUDE_SOURCE" >> /dev/stderr
-
+	echo "Usage: $0 include_source" >> /dev/stderr
 	exit 3
 fi
 
-otc-task --download-only $OTC_TASK_VERSION_PATH_SEGMENT $INCLUDE_SOURCE
+otc-task --download-only $OTC_TASK_VERSION_PATH_SEGMENT $include_source

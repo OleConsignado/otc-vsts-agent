@@ -2,36 +2,36 @@
 
 set -e
 
-DOWNLOADED_SCRIPTS_DIR="/tmp/otc-task-script-cache"
+downloaded_scripts_dir="/tmp/otc-task-script-cache"
 
-if [ -z "$REPOSITORY_BASE_URL"]
+if [ -z "$repository_base_url"]
 then
-	REPOSITORY_BASE_URL="https://raw.githubusercontent.com/OleConsignado/otc-vsts-agent-tasks"
+	repository_base_url="https://raw.githubusercontent.com/OleConsignado/otc-vsts-agent-tasks"
 fi
 
-if ! [ -d "$DOWNLOADED_SCRIPTS_DIR" ]
+if ! [ -d "$downloaded_scripts_dir" ]
 then
-	mkdir "$DOWNLOADED_SCRIPTS_DIR"
+	mkdir "$downloaded_scripts_dir"
 fi
 
 function usage
 {
 	echo "Usage: "
-	echo "   $0 [--always-download] [--debug] [--bash-login] [--download-only] VERSION_PATH_SEGMENT SCRIPT_PATH_SEGMENT [SCRIPT_ARGS ...]"
+	echo "   $0 [--always-download] [--debug] [--bash-login] [--download-only] version_path_segment script_path_segment [SCRIPT_ARGS ...]"
 	echo "Example: "
 	echo "   $0 v1 build.sh Debug"
 }
 
-ALWAYS_DOWNLOAD=false
+always_download=false
 
-if ! [ -z "$OTC_TASK_ALWAYS_DOWNLOAD" ] && $OTC_TASK_ALWAYS_DOWNLOAD
+if ! [ -z "$otc_task_always_download" ] && $otc_task_always_download
 then # parent script called with --always-download
-	ALWAYS_DOWNLOAD=true
+	always_download=true
 fi
 
-BASH_DEBUG=false
-BASH_LOGIN=false
-DOWNLOAD_ONLY=false
+bash_debug=false
+bash_login=false
+download_only=false
 
 # arguments handling
 # based on https://gist.github.com/jehiah/855086#file-simple_args_parsing-sh
@@ -39,20 +39,20 @@ while [[ "$1" == "--"* ]]
 do
 	case "$1" in
 		--always-download)
-			ALWAYS_DOWNLOAD=true
+			always_download=true
 			;;
 		--debug)
-			BASH_DEBUG=true			
+			bash_debug=true			
 			;;
 		--bash-login)
-			BASH_LOGIN=true
+			bash_login=true
 			;;
 		--download-only)
-			DOWNLOAD_ONLY=true
+			download_only=true
 			;;
 		*)
-			echo "Unknow parameter '$1'" >> /dev/stderr
-			usage >> /dev/stderr
+			echo "Unknow parameter '$1'" >&2
+			usage >&2
 			exit 4
 			;;
 	esac
@@ -60,53 +60,53 @@ do
 done
 
 # Expose to be read on nested otc-task invokation
-export OTC_TASK_ALWAYS_DOWNLOAD=$ALWAYS_DOWNLOAD
+export otc_task_always_download=$always_download
 
-VERSION_PATH_SEGMENT="$1"
-SCRIPT_PATH_SEGMENT="$2"
+version_path_segment="$1"
+script_path_segment="$2"
 
-if [ -z "$VERSION_PATH_SEGMENT" ] || [ -z "$SCRIPT_PATH_SEGMENT" ]
+if [ -z "$version_path_segment" ] || [ -z "$script_path_segment" ]
 then
-	usage >> /dev/stderr
+	usage >&2
 
 	exit 3
 fi
 
 shift 2
 
-# Expose VERSION_PATH_SEGMENT in order to be used on nested otc-task invokation
-export OTC_TASK_VERSION_PATH_SEGMENT=$VERSION_PATH_SEGMENT
+# Expose version_path_segment in order to be used on nested otc-task invokation
+export OTC_TASK_VERSION_PATH_SEGMENT=$version_path_segment
 
-SCRIPT_URL="${REPOSITORY_BASE_URL}/$VERSION_PATH_SEGMENT/$SCRIPT_PATH_SEGMENT"
-SCRIPT_IDENTIFIER=$(echo "$VERSION_PATH_SEGMENT-$SCRIPT_PATH_SEGMENT" | sed 's/[^a-zA-Z0-9.-]*//g')
-SCRIPT_URL_SHA1=$(echo $SCRIPT_URL | sha1sum -t | awk '{ print $1 }')
-SCRIPT_LOCAL_NAME="${SCRIPT_IDENTIFIER}-${SCRIPT_URL_SHA1}"
-SCRIPT_FULL_PATH="${DOWNLOADED_SCRIPTS_DIR}/$SCRIPT_LOCAL_NAME"
+script_url="${repository_base_url}/$version_path_segment/$script_path_segment"
+script_identifier=$(echo "$version_path_segment-$script_path_segment" | sed 's/[^a-zA-Z0-9.-]*//g')
+script_url_sha1=$(echo $script_url | sha1sum -t | awk '{ print $1 }')
+script_local_name="${script_identifier}-${script_url_sha1}"
+script_full_path="${downloaded_scripts_dir}/$script_local_name"
 
-if ! [ -f "$SCRIPT_FULL_PATH" ] || $ALWAYS_DOWNLOAD
+if ! [ -f "$script_full_path" ] || $always_download
 then
-	if ! curl -f -s -H 'Cache-Control: no-cache, no-store, must-revalidate' "$SCRIPT_URL?n=$(date +%s)" \
-		-o "$SCRIPT_FULL_PATH"
+	if ! curl -f -s -H 'Cache-Control: no-cache, no-store, must-revalidate' "$script_url?n=$(date +%s)" \
+		-o "$script_full_path"
 	then
-		echo "Error downloading '$SCRIPT_URL'." >> /dev/stderr
+		echo "Error downloading '$script_url'." >&2
 		exit 4
 	fi
 fi
 
-if $DOWNLOAD_ONLY
+if $download_only
 then
-	cat "$SCRIPT_FULL_PATH"
+	cat "$script_full_path"
 else
-	BASH_ARGS=""
+	bash_args=""
 
-	if $BASH_LOGIN
+	if $bash_login
 	then
-		BASH_ARGS="$BASH_ARGS -l"
+		bash_args="$bash_args -l"
 	fi
 
-	if $BASH_DEBUG
+	if $bash_debug
 	then
-		BASH_ARGS="$BASH_ARGS -x"
+		bash_args="$bash_args -x"
 	fi	
-	bash $BASH_ARGS "$SCRIPT_FULL_PATH" $@
+	bash $bash_args "$script_full_path" $@
 fi
