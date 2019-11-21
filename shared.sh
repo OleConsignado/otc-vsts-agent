@@ -27,6 +27,7 @@ echo "Building image ..."
 docker build --build-arg KUBECTL_VERSION=$KUBECTL_VERSION \
 	--build-arg DOCKER_VERSION=$DOCKER_VERSION  \
 	--build-arg HELM_VERSION=$HELM_VERSION  \
+	--build-arg NODE_VERSION=$NODE_VERSION  \
 	. -t $IMAGE_FULL_NAME
 
 echo "Pushing image ..."
