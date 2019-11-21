@@ -5,6 +5,7 @@ FROM microsoft/vsts-agent:ubuntu-16.04
 ARG KUBECTL_VERSION
 ARG DOCKER_VERSION
 ARG HELM_VERSION
+ARG NODE_VERSION
 
 # Install basic command-line utilities
 RUN apt-get update \
@@ -27,6 +28,7 @@ RUN apt-get update \
     zip \
     tzdata \
     default-jre \
+    xz-utils \
  && rm -rf /var/lib/apt/lists/*
 
 # Setup the locale
@@ -62,6 +64,15 @@ RUN mkdir helm-installation \
   && cd ..  \
   && rm -Rf helm-installation \
   && chmod a+x /usr/local/bin/helm
+
+# Install Node
+RUN curl https://nodejs.org/dist/$NODE_VERSION/node-$NODE_VERSION-$linux-x64.tar.xz -o node-$NODE_VERSION-$linux-x64.tar.xz \
+  && mkdir /usr/local/lib/nodejs \
+  && tar -xJvf node-$NODE_VERSION-$linux-x64.tar.xz -C /usr/local/lib/nodejs
+  && rm node-$NODE_VERSION-$linux-x64.tar.xz  
+  && ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$linux-x64/bin/node /usr/bin/node
+  && ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$linux-x64/bin/npm /usr/bin/npm
+  && ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$linux-x64/bin/npx /usr/bin/npx
 
 # Docker
 ENV DOCKER_CHANNEL stable
