@@ -68,10 +68,10 @@ RUN mkdir helm-installation \
 # Install Node
 RUN curl https://nodejs.org/dist/$NODE_VERSION/node-$NODE_VERSION-$linux-x64.tar.xz -o node-$NODE_VERSION-$linux-x64.tar.xz \
   && mkdir /usr/local/lib/nodejs \
-  && tar -xJvf node-$NODE_VERSION-$linux-x64.tar.xz -C /usr/local/lib/nodejs
-  && rm node-$NODE_VERSION-$linux-x64.tar.xz  
-  && ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$linux-x64/bin/node /usr/bin/node
-  && ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$linux-x64/bin/npm /usr/bin/npm
+  && tar -xJvf node-$NODE_VERSION-$linux-x64.tar.xz -C /usr/local/lib/nodejs \
+  && rm node-$NODE_VERSION-$linux-x64.tar.xz \
+  && ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$linux-x64/bin/node /usr/bin/node \
+  && ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$linux-x64/bin/npm /usr/bin/npm \
   && ln -s /usr/local/lib/nodejs/node-$NODE_VERSION-$linux-x64/bin/npx /usr/bin/npx
 
 # Docker
