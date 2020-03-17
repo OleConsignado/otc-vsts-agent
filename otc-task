@@ -107,5 +107,5 @@ else
 	then
 		bash_args="$bash_args -x"
 	fi	
-	bash $bash_args "$script_full_path" $@
+	bash $bash_args "$script_full_path" "$@"
 fi
