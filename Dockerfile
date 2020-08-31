@@ -27,7 +27,6 @@ RUN apt-get update \
     wget \
     zip \
     tzdata \
-    default-jre \
     xz-utils \
  && rm -rf /var/lib/apt/lists/*
 
@@ -49,6 +48,59 @@ RUN curl https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-p
  && rm -rf /etc/apt/sources.list.d/*
 RUN dotnet help
 ENV dotnet=/usr/bin/dotnet
+
+# Install Java OpenJDKs
+RUN apt-add-repository -y ppa:openjdk-r/ppa
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openjdk-7-jdk \
+ && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openjdk-8-jdk \
+ && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openjdk-9-jdk \
+ && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openjdk-10-jdk \
+ && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openjdk-11-jdk \
+ && rm -rf /var/lib/apt/lists/*
+RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+ENV JAVA_HOME_7_X64=/usr/lib/jvm/java-7-openjdk-amd64 \
+    JAVA_HOME_8_X64=/usr/lib/jvm/java-8-openjdk-amd64 \
+    JAVA_HOME_9_X64=/usr/lib/jvm/java-9-openjdk-amd64 \
+    JAVA_HOME_10_X64=/usr/lib/jvm/java-10-openjdk-amd64 \
+    JAVA_HOME_11_X64=/usr/lib/jvm/java-11-openjdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
+    JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+
+# Install Java Tools (Ant, Gradle, Maven)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    ant \
+    ant-optional \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl -sL https://services.gradle.org/distributions/gradle-4.6-bin.zip -o gradle-4.6.zip \
+ && unzip -d /usr/share gradle-4.6.zip \
+ && ln -s /usr/share/gradle-4.6/bin/gradle /usr/bin/gradle \
+ && rm gradle-4.6.zip
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    maven \
+ && rm -rf /var/lib/apt/lists/*
+ENV ANT_HOME=/usr/share/ant \
+    GRADLE_HOME=/usr/share/gradle \
+    M2_HOME=/usr/share/maven
+
+# Install Google Chrome
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+ && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list \
+ && apt-get update \
+ && apt-get install -y google-chrome-stable \
+ && rm -rf /var/lib/apt/lists/* \
+ && rm -rf /etc/apt/sources.list.d/*
+ENV CHROME_BIN /usr/bin/google-chrome
 
 # Install kubectl
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl \
