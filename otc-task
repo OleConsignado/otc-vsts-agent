@@ -4,7 +4,7 @@ set -e
 
 downloaded_scripts_dir="/tmp/otc-task-script-cache"
 
-if [ -z "$repository_base_url"]
+if [ -z "$repository_base_url" ]
 then
 	repository_base_url="https://raw.githubusercontent.com/OleConsignado/otc-vsts-agent-tasks"
 fi
